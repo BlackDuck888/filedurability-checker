@@ -1,5 +1,4 @@
-# filedurability-checker
-Storj V3 Network File Durability Checker
+# Storj V3 Network File Durability Checker
 
 ## What can it do
 
