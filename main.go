@@ -34,6 +34,7 @@ type Config struct {
 type Status struct {
 	Time    time.Time
 	Success bool
+	Error   string
 }
 
 var (
@@ -144,7 +145,7 @@ func durabilityCheck(ctx context.Context, conf *Config, intv time.Duration) {
 				err = downloadDataandCompare(ctx, conf)
 				if err != nil {
 					Lock.Lock()
-					Stats[i] = Status{Time: time.Now().UTC(), Success: false}
+					Stats[i] = Status{Time: time.Now().UTC(), Success: false, Error: err.Error()}
 					Lock.Unlock()
 					log.Printf("durability check failed: %v", err)
 				} else {

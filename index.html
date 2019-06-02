@@ -11,12 +11,14 @@
                 <th>Check Nr.</th>
                 <th>Timestamp</th>
                 <th>Success Status</th>
+                <th>Error</th>
             </tr>
             {{ range $Key, $Stat := . }}
                 <tr>
                     <td>{{$Key}}</td>
-                <td>{{$Stat.Time}}</td>
-                <td>{{$Stat.Success}}</td>
+                    <td>{{$Stat.Time}}</td>
+                    <td>{{$Stat.Success}}</td>
+                    <td>{{$Stat.Error}}</td>
                 </tr>
             {{end}}
         </table>
