@@ -148,18 +148,23 @@ func durabilityCheck(ctx context.Context, conf *Config, intv time.Duration) {
 			case <-ticker.C:
 				i++
 				log.Println("checking the file..")
+				stat := Status{Time: time.Now().UTC()}
 				err = downloadDataandCompare(ctx, conf)
 				if err != nil {
+					stat.Success = false
+					stat.Error = err.Error()
 					Lock.Lock()
-					Stat.List[i] = Status{Time: time.Now().UTC(), Success: false, Error: err.Error()}
 					Stat.Percentage = float32(j) * 100 / float32(i)
+					Stat.List[i] = stat
 					Lock.Unlock()
 					log.Printf("durability check failed: %v", err)
 				} else {
 					j++
+					stat.Success = true
+					stat.Error = "-"
 					Lock.Lock()
 					Stat.Percentage = float32(j) * 100 / float32(i)
-					Stat.List[i] = Status{Time: time.Now().UTC(), Success: true}
+					Stat.List[i] = stat
 					Lock.Unlock()
 					log.Println("durability check successful")
 				}

@@ -1,6 +1,17 @@
 # filedurability-checker
 Storj V3 Network File Durability Checker
 
+## What can it do
+
+This tool uploads a file of your choice and then downloads it every (default) 5 Minutes to check if the file is still
+available. After download it compares it with the original file to ensure its correct.
+
+It serves a website (default :8080) with the statistics about the test, as well as the errors if it failed on a specific
+ check.
+ 
+ The idea of this tool is to be ran with multiple file sizes on different locations, to ensure network stability and
+  durability.
+
 ##Install
 
 ```
@@ -33,3 +44,5 @@ _Note: In this version it is not checking if the bucket is existing. Please crea
 --interval -  Interval between the checks in seconds, default: 300
 --listen   -  Webserver Listen Address, default: :8080
 ```
+
+_More features to come..._
