@@ -37,10 +37,15 @@ type Status struct {
 	Error   string
 }
 
+type Stats struct {
+	List       map[int64]Status
+	Percentage float32
+}
+
 var (
-	Lock  *sync.Mutex
-	Stats map[int64]Status
-	tmpl  *template.Template
+	Lock *sync.Mutex
+	Stat Stats
+	tmpl *template.Template
 )
 
 func toStorjKey(key string) (newKey storj.Key) {
@@ -130,7 +135,7 @@ func downloadDataandCompare(ctx context.Context, conf *Config) (err error) {
 
 func durabilityCheck(ctx context.Context, conf *Config, intv time.Duration) {
 	go func() {
-		var i int64
+		var i, j int64
 		var err error
 		quit := make(chan os.Signal)
 		signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
@@ -141,20 +146,23 @@ func durabilityCheck(ctx context.Context, conf *Config, intv time.Duration) {
 		for active {
 			select {
 			case <-ticker.C:
+				i++
 				log.Println("checking the file..")
 				err = downloadDataandCompare(ctx, conf)
 				if err != nil {
 					Lock.Lock()
-					Stats[i] = Status{Time: time.Now().UTC(), Success: false, Error: err.Error()}
+					Stat.List[i] = Status{Time: time.Now().UTC(), Success: false, Error: err.Error()}
+					Stat.Percentage = float32(j) * 100 / float32(i)
 					Lock.Unlock()
 					log.Printf("durability check failed: %v", err)
 				} else {
+					j++
 					Lock.Lock()
-					Stats[i] = Status{Time: time.Now().UTC(), Success: true}
+					Stat.Percentage = float32(j) * 100 / float32(i)
+					Stat.List[i] = Status{Time: time.Now().UTC(), Success: true}
 					Lock.Unlock()
 					log.Println("durability check successful")
 				}
-				i++
 			case <-quit:
 				log.Printf("got SIGTERM, shutting down")
 				ticker.Stop()
@@ -190,7 +198,7 @@ func shutdown(conf *Config) (err error) {
 func durabilityStats(w http.ResponseWriter, r *http.Request) {
 
 	Lock.Lock()
-	err := tmpl.Execute(w, Stats)
+	err := tmpl.Execute(w, Stat)
 	Lock.Unlock()
 
 	if err != nil {
@@ -259,7 +267,8 @@ func main() {
 	}
 
 	Lock = &sync.Mutex{}
-	Stats = make(map[int64]Status)
+	Stat.List = make(map[int64]Status)
+	Stat.Percentage = 100
 
 	durabilityCheck(ctx, &running, time.Second*time.Duration(*interval))
 
