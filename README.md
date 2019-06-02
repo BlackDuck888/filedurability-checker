@@ -14,15 +14,22 @@ go install ./...
 filedurability-checker --file awesomedurable.file --apikey <YOURAPIKEY>
 ```
 
-The following flags are supported:
+_Note: In this version it is not checking if the bucket is existing. Please create it beforehand._
 
+### The following flags are supported:
+
+#### Required:
 ```
---addr     -  Satellite Address, default: satellite.stefan-benten.de:7777
+
 --apikey   -  API Key, no default
+--file     -  File to upload (specify from your local folder)
+```
+#### Optional:
+```
+--addr     -  Satellite Address, default: satellite.stefan-benten.de:7777 
 --enckey   -  Encryption Key, default: you'll never guess this
 --bucket   -  Bucket Name, default: file-durability
 --path     -  Path in the Bucket, no default
---file     -  File to upload (specify from your local folder)
 --interval -  Interval between the checks in seconds, default: 300
 --listen   -  Webserver Listen Address, default: :8080
 ```

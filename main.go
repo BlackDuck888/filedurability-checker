@@ -245,6 +245,7 @@ func main() {
 		log.Fatalln("failed to open project: ", err)
 	}
 
+	//TODO: Check if bucket exists, else create
 	running.Bucket, err = openBucket(ctx, running, *bucket)
 	if err != nil {
 		log.Fatalln("failed to open bucket: ", err)
