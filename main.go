@@ -211,13 +211,12 @@ func main() {
 	var err error
 
 	addr := flag.String("addr", "satellite.stefan-benten.de:7777", "Satellite Address")
-	apikey := flag.String("apikey", "13YqfYYDdEpbQLxHXcZAfQ2KoJ4bBzNPrTJtv8Jcpj9nUiZRBE7ynMLKNLJT4upEMVS64RojfZpTmXZg4xS9DNf3sabjNPgd7nFiVZx", "API Key")
+	apikey := flag.String("apikey", "", "API Key")
 	enckey := flag.String("enckey", "you'll never guess this", "Encryption Key")
 	bucket := flag.String("bucket", "file-durability", "Bucket")
 	path := flag.String("path", "", "path for the file in the bucket")
 	file := flag.String("file", "", "File to use for Durability Test")
 	interval := flag.Int("interval", 300, "time in seconds between durability check")
-
 	listen := flag.String("listen", ":8080", "Webserver Listen Address")
 	flag.Parse()
 
