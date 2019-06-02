@@ -16,7 +16,7 @@
             {{ range $Key, $Stat := . }}
                 <tr>
                     <td>{{$Key}}</td>
-                    <td>{{$Stat.Time}}</td>
+                    <td>{{$Stat.Time.Format "Jan 01, 2000 00:00:01 UTC" }}</td>
                     <td>{{$Stat.Success}}</td>
                     <td>{{$Stat.Error}}</td>
                 </tr>
