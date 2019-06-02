@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>V3 File Durability Status</title>
+</head>
+<body>
+        <h1>V3 File Durability Status</h1>
+        <table>
+            <tr>
+                <th>Check Nr.</th>
+                <th>Timestamp</th>
+                <th>Success Status</th>
+            </tr>
+            {{ range $Key, $Stat := . }}
+                <tr>
+                    <td>{{$Key}}</td>
+                <td>{{$Stat.Time}}</td>
+                <td>{{$Stat.Success}}</td>
+                </tr>
+            {{end}}
+        </table>
+</body>
+</html>
