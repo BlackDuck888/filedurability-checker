@@ -30,7 +30,6 @@ _Note: In this version it is not checking if the bucket is existing. Please crea
 
 #### Required:
 ```
-
 --apikey   -  API Key, no default
 --file     -  File to upload (specify from your local folder)
 ```
