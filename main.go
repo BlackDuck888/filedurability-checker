@@ -6,11 +6,13 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"sync"
 	"syscall"
 	"time"
@@ -39,6 +41,9 @@ type Status struct {
 
 type Stats struct {
 	List       map[int64]Status
+	File       string
+	Size       int64
+	Interval   time.Duration
 	Percentage float32
 }
 
@@ -92,11 +97,10 @@ func openBucket(ctx context.Context, conf Config, name string) (bucket *uplink.B
 	return bucket, nil
 }
 
-func uploadData(ctx context.Context, conf *Config, data []byte) (err error) {
+func uploadData(ctx context.Context, conf *Config, data io.Reader) (err error) {
 	log.Printf("uploading file: %v", conf.Path)
-	buf := bytes.NewBuffer(data)
 
-	err = conf.Bucket.UploadObject(ctx, conf.Path, buf, nil)
+	err = conf.Bucket.UploadObject(ctx, conf.Path, data, nil)
 	if err != nil {
 		return fmt.Errorf("could not upload: %v", err)
 	}
@@ -142,6 +146,8 @@ func durabilityCheck(ctx context.Context, conf *Config, intv time.Duration) {
 
 		ticker := time.NewTicker(intv)
 		active := true
+
+		Stat.Interval = intv
 
 		for active {
 			select {
@@ -226,7 +232,7 @@ func main() {
 	flag.Parse()
 
 	if *addr == "" || *apikey == "" || *file == "" {
-		log.Fatalln("reguired flag missing!")
+		log.Fatalln("required flag missing!")
 	}
 
 	ctx := context.Background()
@@ -256,17 +262,28 @@ func main() {
 		log.Fatalln("failed to open bucket: ", err)
 	}
 
-	data, err := ioutil.ReadFile(*file)
+	openpath, err := filepath.Abs(running.File)
+	if err != nil {
+		log.Fatalln("could not locate file: ", err)
+	}
+
+	testfile, err := os.Open(openpath)
 	if err != nil {
 		log.Fatalln("failed to open file: ", err)
 	}
+
+	fileInfo, err := testfile.Stat()
+	if err != nil {
+		log.Fatalln("failed to gather file information: ", err)
+	}
+
 	if *path != "" {
 		running.Path = storj.JoinPaths(*path, running.File)
 	} else {
 		running.Path = running.File
 	}
 
-	err = uploadData(ctx, &running, data)
+	err = uploadData(ctx, &running, testfile)
 	if err != nil {
 		log.Fatalln("failed to upload data: ", err)
 	}
@@ -274,11 +291,19 @@ func main() {
 	Lock = &sync.Mutex{}
 	Stat.List = make(map[int64]Status)
 	Stat.Percentage = 100
+	Stat.File = fileInfo.Name()
+	Stat.Size = fileInfo.Size()
 
 	durabilityCheck(ctx, &running, time.Second*time.Duration(*interval))
 
+	// Creating template from inline file, to make binary portable
+	tmpl = template.New("index")
+	tmpl, err = tmpl.Parse(indexTemplate)
+	if err != nil {
+		log.Fatalln("failed to parse template: ", err)
+	}
+
 	log.Println("starting web server")
-	tmpl = template.Must(template.ParseFiles("index.html"))
 	http.HandleFunc("/", durabilityStats)
 	if err := http.ListenAndServe(*listen, nil); err != nil {
 		panic(err)
