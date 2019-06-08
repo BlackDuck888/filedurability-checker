@@ -1,5 +1,4 @@
-# filedurability-checker
-Storj V3 Network File Durability Checker
+# Storj V3 Network File Durability Checker
 
 ## What can it do
 
@@ -31,7 +30,6 @@ _Note: In this version it is not checking if the bucket is existing. Please crea
 
 #### Required:
 ```
-
 --apikey   -  API Key, no default
 --file     -  File to upload (specify from your local folder)
 ```
